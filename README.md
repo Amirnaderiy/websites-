@@ -51,7 +51,7 @@ python3 scripts/update_site.py --fetch  # fetch Scholar, then re-render
 
 1. Go to **Settings → Pages → Build and deployment**.
 2. Under **Source**, choose **Deploy from a branch**. Pick the repository's default branch and **/ (root)**, then save.
-3. After about a minute the site is live at `https://amirnaderiy.github.io/websites-/`.
+3. After about a minute the site is live at `https://amirnaderi.com/` (custom domain from `CNAME`).
 
 ## Languages
 
@@ -67,7 +67,7 @@ Each page includes:
 These steps help most after the site is live:
 1. **Google Search Console:** open https://search.google.com/search-console, add the site URL as a *URL prefix* property, and verify it with the *HTML tag* method. Put that tag in the `<head>` of `index.html`, or ask Claude to. Then submit `sitemap.xml` under **Sitemaps** and click **Request indexing**.
 2. **Link to the site from your profiles.** Add it to your LinkedIn contact info, GitHub profile, Google Scholar homepage field and ResearchGate. Links from these high-authority sites are the biggest ranking signal for a personal name.
-3. **Optional:** rename the repo to `amirnaderiy.github.io` so the address becomes `https://amirnaderiy.github.io/`, or use a custom domain. Then update `data/site.json` and run `python3 scripts/update_site.py`.
+3. The site uses the custom domain **amirnaderi.com** (see `CNAME`). If the domain ever changes, update `data/site.json` and run `python3 scripts/update_site.py`.
 
 ## Local preview
 

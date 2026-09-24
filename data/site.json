@@ -1,4 +1,4 @@
 {
-  "url": "https://amirnaderiy.github.io/websites-/",
+  "url": "https://amirnaderi.com/",
   "note": "Public address of the site, ending in /. Change it if you rename the repo or add a custom domain, then run: python3 scripts/update_site.py"
 }
