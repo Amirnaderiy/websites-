@@ -1,7 +1,11 @@
 {
   "scholar_user": "WmUoRTsAAAAJ",
-  "last_synced": null,
-  "metrics": null,
+  "last_synced": "2026-09-24",
+  "metrics": {
+    "citations": 58,
+    "h_index": 3,
+    "i10_index": 2
+  },
   "publications": [
     {
       "id": "jbpe:article_49907",
@@ -9,8 +13,9 @@
       "authors": "AR Naderi Yaghouti, A Shalbaf",
       "venue": "Journal of Biomedical Physics and Engineering",
       "year": 2025,
-      "citations": null,
-      "url": "https://jbpe.sums.ac.ir/article_49907.html"
+      "citations": 5,
+      "url": "https://jbpe.sums.ac.ir/article_49907.html",
+      "scholar_url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:2osOgNQ5qMEC"
     },
     {
       "id": "doi:10.1038/s41598-024-51741-0",
@@ -18,8 +23,9 @@
       "authors": "AR Naderi Yaghouti, H Zamanian, A Shalbaf",
       "venue": "Scientific Reports 14, 2442",
       "year": 2024,
-      "citations": null,
-      "url": "https://www.nature.com/articles/s41598-024-51741-0"
+      "citations": 37,
+      "url": "https://www.nature.com/articles/s41598-024-51741-0",
+      "scholar_url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:d1gkVwhDpl0C"
     },
     {
       "id": "tumj:79-1-10",
@@ -27,8 +33,18 @@
       "authors": "AR Naderi Yaghouti, A Shalbaf, A Maghsoudi",
       "venue": "Tehran University Medical Journal 79 (1), 10–17",
       "year": 2021,
-      "citations": null,
-      "url": "https://tumj.tums.ac.ir/article-1-11130-en.html"
+      "citations": 3,
+      "url": "https://tumj.tums.ac.ir/article-1-11130-en.html",
+      "scholar_url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:9yKSN-GCB0IC"
+    },
+    {
+      "id": "scholar:WmUoRTsAAAAJ:qjMakFHDy7sC",
+      "title": "Artificial intelligence for ovarian cancer detection with medical images: a review of the last decade (2013–2023)",
+      "authors": "AR Naderi Yaghouti, A Shalbaf, R Alizadehsani, RS Tan, A Vijayananthan, ...",
+      "venue": "Archives of Computational Methods in Engineering 32 (7), 4093-4124",
+      "year": 2025,
+      "citations": 13,
+      "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:qjMakFHDy7sC"
     }
   ]
 }
