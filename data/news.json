@@ -1,0 +1,17 @@
+[
+  {
+    "date": "2025",
+    "text": "New paper in the Journal of Biomedical Physics and Engineering: classifying nonalcoholic fatty liver grades with pre-trained CNNs and a random forest on B-mode ultrasound.",
+    "link": "https://jbpe.sums.ac.ir/article_49907.html"
+  },
+  {
+    "date": "2024-01",
+    "text": "New paper in Scientific Reports: machine learning approaches for early detection of non-alcoholic steatohepatitis (NASH) from clinical and blood parameters.",
+    "link": "https://www.nature.com/articles/s41598-024-51741-0"
+  },
+  {
+    "date": "2023-12",
+    "text": "Joined the EGRET-AAA Marie Skłodowska-Curie Doctoral Network as Doctoral Candidate 9 at Otto-von-Guericke University Magdeburg, working on deep learning for visual pathway anomalies in glaucoma.",
+    "link": "https://www.egret-aaa.eu/project-9/"
+  }
+]

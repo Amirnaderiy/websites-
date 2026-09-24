@@ -1,0 +1,34 @@
+{
+  "scholar_user": "WmUoRTsAAAAJ",
+  "last_synced": null,
+  "metrics": null,
+  "publications": [
+    {
+      "id": "jbpe:article_49907",
+      "title": "Classification of Nonalcoholic Fatty Liver Grades using Pre-Trained Convolutional Neural Networks and a Random Forest Classifier on B-Mode Ultrasound Images",
+      "authors": "AR Naderi Yaghouti, A Shalbaf",
+      "venue": "Journal of Biomedical Physics and Engineering",
+      "year": 2025,
+      "citations": null,
+      "url": "https://jbpe.sums.ac.ir/article_49907.html"
+    },
+    {
+      "id": "doi:10.1038/s41598-024-51741-0",
+      "title": "Machine learning approaches for early detection of non-alcoholic steatohepatitis based on clinical and blood parameters",
+      "authors": "AR Naderi Yaghouti, H Zamanian, A Shalbaf",
+      "venue": "Scientific Reports 14, 2442",
+      "year": 2024,
+      "citations": null,
+      "url": "https://www.nature.com/articles/s41598-024-51741-0"
+    },
+    {
+      "id": "tumj:79-1-10",
+      "title": "Automatic classification of Non-alcoholic fatty liver using texture features from ultrasound images",
+      "authors": "AR Naderi Yaghouti, A Shalbaf, A Maghsoudi",
+      "venue": "Tehran University Medical Journal 79 (1), 10–17",
+      "year": 2021,
+      "citations": null,
+      "url": "https://tumj.tums.ac.ir/article-1-11130-en.html"
+    }
+  ]
+}
