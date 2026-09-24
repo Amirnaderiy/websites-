@@ -81,6 +81,18 @@
     });
   }
 
+  // ----- copy BibTeX -----
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.copy-btn');
+    if (!btn || !navigator.clipboard) return;
+    var code = btn.parentNode.querySelector('code');
+    navigator.clipboard.writeText(code.textContent).then(function () {
+      var label = btn.textContent;
+      btn.textContent = btn.dataset.copied;
+      setTimeout(function () { btn.textContent = label; }, 1500);
+    });
+  });
+
   var year = document.querySelector('[data-year]');
   if (year) year.textContent = new Date().getFullYear();
 })();

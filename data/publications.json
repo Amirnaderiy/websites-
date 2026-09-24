@@ -25,7 +25,8 @@
       "year": 2024,
       "citations": 37,
       "url": "https://www.nature.com/articles/s41598-024-51741-0",
-      "scholar_url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:d1gkVwhDpl0C"
+      "scholar_url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:d1gkVwhDpl0C",
+      "doi": "10.1038/s41598-024-51741-0"
     },
     {
       "id": "tumj:79-1-10",
@@ -45,6 +46,16 @@
       "year": 2025,
       "citations": 13,
       "url": "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=WmUoRTsAAAAJ&pagesize=100&sortby=pubdate&citation_for_view=WmUoRTsAAAAJ:qjMakFHDy7sC"
+    },
+    {
+      "id": "manual:ovarian-tabular-fm",
+      "title": "Discrimination of benign and malignant ovarian tumors from routine laboratory biomarkers using a tabular foundation model",
+      "authors": "",
+      "venue": "Scientific Reports",
+      "year": null,
+      "status": "under_review",
+      "citations": null,
+      "url": ""
     }
   ]
 }

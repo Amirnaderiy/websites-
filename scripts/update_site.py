@@ -177,7 +177,8 @@ STRINGS = {
         "months": MONTHS,
         "read_more": "Read more", "new_tab": " (opens in new tab)",
         "new_paper": "New paper", "earlier": "Show earlier news",
-        "cited_by": "Cited by {n}", "other": "Other",
+        "cited_by": "Cited by {n}", "other": "Other", "under_review": "Under review",
+        "paper": "Paper", "cite": "Cite", "copy": "Copy BibTeX", "copied": "Copied",
         "stats": ["Publications", "Citations", "h-index", "i10-index"],
         "synced_auto": "Publications are synced automatically from Google Scholar.",
         "synced_on": "Publications synced from Google Scholar on {date}.",
@@ -190,7 +191,8 @@ STRINGS = {
         "months": "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez.".split(),
         "read_more": "Mehr lesen", "new_tab": " (öffnet in neuem Tab)",
         "new_paper": "Neue Publikation", "earlier": "Ältere News anzeigen",
-        "cited_by": "{n}× zitiert", "other": "Sonstige",
+        "cited_by": "{n}× zitiert", "other": "Sonstige", "under_review": "In Begutachtung",
+        "paper": "Artikel", "cite": "Zitieren", "copy": "BibTeX kopieren", "copied": "Kopiert",
         "stats": ["Publikationen", "Zitationen", "h-Index", "i10-Index"],
         "synced_auto": "Publikationen werden automatisch aus Google Scholar übernommen.",
         "synced_on": "Publikationen zuletzt am {date} aus Google Scholar übernommen.",
@@ -247,33 +249,106 @@ def render_news(news, t, lang):
     return "\n".join(out)
 
 
-def render_publications(pubs, t):
-    pubs = sorted(pubs, key=lambda p: (p.get("year") or 0), reverse=True)
-    out, current = [], object()
-    for p in pubs:
-        if p.get("year") != current:
-            if out:
-                out.append("</ol>")
-            current = p.get("year")
-            out.append(f'<h3 class="pub-year">{esc(current or t["other"])}</h3><ol class="pub-list">')
-        authors = SELF_NAME.sub(lambda m: f"<strong>{m.group(0)}</strong>", esc(p.get("authors", "")))
-        cites = p.get("citations")
-        badge = f'<span class="badge">{t["cited_by"].format(n=cites)}</span>' if cites else ""
-        out.append(
-            '<li class="pub">'
-            f'<a class="pub-title" href="{esc(p.get("url") or p.get("scholar_url") or "#")}" target="_blank" rel="noopener" lang="en">{esc(p["title"])}</a>'
-            f'<p class="pub-authors">{authors}</p>'
-            f'<p class="pub-venue"><em>{esc(p.get("venue", ""))}</em>{badge}</p>'
-            "</li>"
+VENUE_SHORT = {
+    "scientific reports": "Sci. Rep.",
+    "journal of biomedical physics and engineering": "J. Biomed. Phys. Eng.",
+    "tehran university medical journal": "Tehran Univ. Med. J.",
+    "archives of computational methods in engineering": "Arch. Comput. Methods Eng.",
+}
+
+
+def venue_short(venue):
+    v = venue.lower()
+    return next((abbr for name, abbr in VENUE_SHORT.items() if v.startswith(name)), "")
+
+
+def bibtex(p):
+    """Best-effort BibTeX from Scholar-style data ("AR Naderi Yaghouti, H Zamanian, ...")."""
+    names = []
+    for a in [x.strip() for x in p.get("authors", "").split(",") if x.strip()]:
+        if a in ("...", "…"):
+            names.append("others")
+            continue
+        initials, _, last = a.partition(" ")
+        if last and initials.isupper() and len(initials) <= 3:
+            names.append(f"{last}, {' '.join(c + '.' for c in initials)}")
+        else:
+            names.append(a)
+    first = re.sub(r"[^a-z]", "", (names[0].split(",")[0] if names else "paper").lower())
+    word = re.sub(r"[^a-z]", "", p["title"].split()[0].lower())
+    journal = re.split(r"\s+\d", p.get("venue", ""))[0].strip()
+    fields = [("title", "{" + p["title"] + "}"), ("author", " and ".join(names)), ("journal", journal)]
+    m = re.search(r"\s(\d+)(?:\s*\((\d+)\))?,\s*([\d–-]+)", p.get("venue", ""))
+    if m:
+        fields.append(("volume", m.group(1)))
+        if m.group(2):
+            fields.append(("number", m.group(2)))
+        fields.append(("pages", m.group(3).replace("–", "--").replace("-", "--").replace("----", "--")))
+    fields.append(("year", str(p.get("year") or "")))
+    if p.get("doi"):
+        fields.append(("doi", p["doi"]))
+    body = ",\n".join(f"  {k} = {{{v}}}" if not v.startswith("{") else f"  {k} = {{{v}}}" for k, v in fields if v)
+    return f"@article{{{first}{p.get('year') or ''}{word},\n{body}\n}}"
+
+
+def render_pub(p, t):
+    authors = SELF_NAME.sub(lambda m: f"<strong>{m.group(0)}</strong>", esc(p.get("authors", "")))
+    cites = p.get("citations")
+    short = venue_short(p.get("venue", ""))
+    meta = f'<span class="venue-tag">{esc(short)}</span>' if short else ""
+    meta += f'<em>{esc(p.get("venue", ""))}</em>'
+    if cites:
+        meta += f'<span class="badge">{t["cited_by"].format(n=cites)}</span>'
+    links = []
+    if p.get("url"):
+        links.append(f'<a class="pub-link" href="{esc(p["url"])}" target="_blank" rel="noopener">{t["paper"]}</a>')
+    if p.get("doi"):
+        links.append(f'<a class="pub-link" href="https://doi.org/{esc(p["doi"])}" target="_blank" rel="noopener">DOI</a>')
+    if p.get("scholar_url"):
+        links.append(f'<a class="pub-link" href="{esc(p["scholar_url"])}" target="_blank" rel="noopener">Scholar</a>')
+    cite = ""
+    if p.get("status") != "under_review":
+        cite = (
+            f'<details class="cite"><summary class="pub-link">{t["cite"]}</summary>'
+            f'<div class="cite-box"><pre><code>{esc(bibtex(p))}</code></pre>'
+            f'<button type="button" class="copy-btn" data-copied="{t["copied"]}">{t["copy"]}</button></div></details>'
         )
-    if out:
+    title_html = esc(p["title"])
+    if p.get("url"):
+        title_html = f'<a class="pub-title" href="{esc(p["url"])}" target="_blank" rel="noopener" lang="en">{title_html}</a>'
+    else:
+        title_html = f'<span class="pub-title" lang="en">{title_html}</span>'
+    return (
+        '<li class="pub">' + title_html
+        + (f'<p class="pub-authors">{authors}</p>' if authors else "")
+        + f'<p class="pub-venue">{meta}</p>'
+        + (f'<div class="pub-links">{"".join(links)}{cite}</div>' if links or cite else "")
+        + "</li>"
+    )
+
+
+def render_publications(pubs, t):
+    pending = [p for p in pubs if p.get("status")]
+    published = sorted((p for p in pubs if not p.get("status")), key=lambda p: (p.get("year") or 0), reverse=True)
+    groups = []
+    if pending:
+        groups.append((t["under_review"], pending))
+    for p in published:
+        label = p.get("year") or t["other"]
+        if not groups or groups[-1][0] != label:
+            groups.append((label, []))
+        groups[-1][1].append(p)
+    out = []
+    for label, items in groups:
+        out.append(f'<h3 class="pub-year">{esc(label)}</h3><ol class="pub-list">')
+        out += [render_pub(p, t) for p in items]
         out.append("</ol>")
     return "\n".join(out)
 
 
 def render_stats(store, t):
     m = store.get("metrics")
-    values = [len(store["publications"])]
+    values = [sum(1 for p in store["publications"] if not p.get("status"))]
     if m:
         values += [m["citations"], m["h_index"], m["i10_index"]]
     return "\n".join(
@@ -320,13 +395,16 @@ def render_head(site_url, lang, path, t, store):
                 "https://www.researchgate.net/profile/Amir-Reza-Naderi-Yaghouti",
                 "https://github.com/Amirnaderiy",
                 "https://www.kaggle.com/amirnaderiy",
+                "https://orcid.org/0000-0002-9269-8084",
             ],
+            "identifier": {"@type": "PropertyValue", "propertyID": "ORCID", "value": "0000-0002-9269-8084"},
+            "award": "Marie Skłodowska-Curie Doctoral Fellowship (Horizon Europe grant agreement No 101072435)",
         },
     }
     works = [
         {"@type": "ScholarlyArticle", "headline": p["title"], "datePublished": str(p.get("year") or ""),
          "url": p.get("url") or "", "author": {"@id": site_url + "#person"}}
-        for p in store["publications"]
+        for p in store["publications"] if not p.get("status")
     ]
     person["mainEntity"]["subjectOf"] = works
     title = "Amir Reza Naderi Yaghouti (Amir Naderi)"

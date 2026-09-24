@@ -10,8 +10,9 @@ A static, single-page CV site. It uses plain HTML, CSS and a little JavaScript, 
 | `de/index.html` | German page (same structure). When you change `index.html`, make the same change here. |
 | `data/site.json` | The site's public address, used for Google (canonical links, sitemap). |
 | `sitemap.xml`, `robots.txt` | Generated for search engines. Don't edit by hand. |
-| `assets/img/profile.jpg` | **Your photo.** Portrait orientation, about 800×1000 px. Until it exists, the page shows your initials. |
-| `data/publications.json` | Publications list, synced from Google Scholar. |
+| `assets/img/profile.jpg` | Your photo (portrait orientation, about 800×1000 px). |
+| `assets/cv/Amir-Reza-Naderi-Yaghouti-CV.pdf` | The CV behind the **Download CV** buttons. Replace the file, keeping the same name, to update it. |
+| `data/publications.json` | Publications list, synced from Google Scholar. Optional per paper: `"doi"` adds a DOI button, and `"status": "under_review"` lists it under *Under review*. |
 | `data/news.json` | News items. Add your own entries at the top; paper announcements are added automatically. |
 | `scripts/update_site.py` | Fetches Google Scholar and renders the publications, news and metrics into `index.html`. |
 | `.github/workflows/update-publications.yml` | Runs the script every Monday, and when you click **Run workflow**. |

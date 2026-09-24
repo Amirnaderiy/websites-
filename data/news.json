@@ -1,20 +1,41 @@
 [
   {
+    "date": "2026",
+    "text": "Oral presentation at CLINICCAI 2026 in Strasbourg, France.",
+    "text_de": "Vortrag auf der CLINICCAI 2026 in Straßburg, Frankreich."
+  },
+  {
+    "date": "2026",
+    "text": "Poster presentation at EVER 2026, the European Association for Vision and Eye Research conference, in Florence, Italy.",
+    "text_de": "Posterpräsentation auf der EVER 2026 (European Association for Vision and Eye Research) in Florenz, Italien."
+  },
+  {
+    "date": "2025",
+    "text": "Poster presentation at ECVP 2025, the European Conference on Visual Perception, in Mainz, Germany.",
+    "text_de": "Posterpräsentation auf der ECVP 2025 (European Conference on Visual Perception) in Mainz."
+  },
+  {
+    "date": "2025",
+    "text": "New review in Archives of Computational Methods in Engineering: artificial intelligence for ovarian cancer detection with medical images over the last decade (2013–2023).",
+    "text_de": "Neue Übersichtsarbeit in Archives of Computational Methods in Engineering: künstliche Intelligenz zur Erkennung von Eierstockkrebs in medizinischen Bildern im letzten Jahrzehnt (2013–2023).",
+    "link": "https://scholar.google.com/citations?user=WmUoRTsAAAAJ&hl=en"
+  },
+  {
     "date": "2025",
     "text": "New paper in the Journal of Biomedical Physics and Engineering: classifying nonalcoholic fatty liver grades with pre-trained CNNs and a random forest on B-mode ultrasound.",
     "link": "https://jbpe.sums.ac.ir/article_49907.html",
     "text_de": "Neue Publikation im Journal of Biomedical Physics and Engineering: Einstufung der nichtalkoholischen Fettleber mit vortrainierten CNNs und einem Random Forest anhand von B-Mode-Ultraschall."
   },
   {
+    "date": "2024-06",
+    "text": "Started a joint PhD in Visual Neuroscience at Otto-von-Guericke University Magdeburg and the University of Groningen as a Marie Skłodowska-Curie Doctoral Candidate (EGRET-AAA, Project 9), working on deep learning for visual pathway anomalies in glaucoma.",
+    "link": "https://www.egret-aaa.eu/project-9/",
+    "text_de": "Beginn meiner gemeinsamen Promotion in visueller Neurowissenschaft an der Otto-von-Guericke-Universität Magdeburg und der Universität Groningen als Marie-Skłodowska-Curie-Doktorand (EGRET-AAA, Projekt 9) zu Deep Learning für Anomalien der Sehbahn bei Glaukom."
+  },
+  {
     "date": "2024-01",
     "text": "New paper in Scientific Reports: machine learning approaches for early detection of non-alcoholic steatohepatitis (NASH) from clinical and blood parameters.",
     "link": "https://www.nature.com/articles/s41598-024-51741-0",
     "text_de": "Neue Publikation in Scientific Reports: Machine-Learning-Ansätze zur Früherkennung der nichtalkoholischen Steatohepatitis (NASH) aus klinischen und Blutparametern."
-  },
-  {
-    "date": "2024",
-    "text": "Started a joint PhD in Visual Neuroscience at Otto-von-Guericke University Magdeburg and the University of Groningen as a Marie Skłodowska-Curie Doctoral Candidate (EGRET-AAA, Project 9), working on deep learning for visual pathway anomalies in glaucoma.",
-    "link": "https://www.egret-aaa.eu/project-9/",
-    "text_de": "Beginn meiner gemeinsamen Promotion in visueller Neurowissenschaft an der Otto-von-Guericke-Universität Magdeburg und der Universität Groningen als Marie-Skłodowska-Curie-Doktorand (EGRET-AAA, Projekt 9) zu Deep Learning für Anomalien der Sehbahn bei Glaukom."
   }
 ]
