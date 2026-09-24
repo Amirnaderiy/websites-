@@ -84,8 +84,11 @@
     <section id="top" class="hero container">
       <div class="portrait">
         <span class="portrait-fallback" aria-hidden="true">AN</span>
-        <!-- Put your photo at assets/img/profile.jpg (portrait, about 800×1000 px). -->
-        <img src="assets/img/profile.jpg" alt="Portrait of Amir Reza Naderi Yaghouti" width="320" height="400" fetchpriority="high" onerror="this.remove()">
+        <!-- Photo: assets/img/profile.webp + profile.jpg (4:5 portrait, 800×1000 px). -->
+        <picture>
+          <source srcset="assets/img/profile.webp" type="image/webp">
+          <img src="assets/img/profile.jpg" alt="Portrait of Amir Reza Naderi Yaghouti" width="800" height="1000" fetchpriority="high" onerror="this.closest('picture').remove()">
+        </picture>
       </div>
       <div class="hero-text">
         <p class="eyebrow">PhD Researcher · Biomedical AI &amp; Visual Neuroscience</p>
