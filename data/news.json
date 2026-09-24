@@ -2,16 +2,19 @@
   {
     "date": "2025",
     "text": "New paper in the Journal of Biomedical Physics and Engineering: classifying nonalcoholic fatty liver grades with pre-trained CNNs and a random forest on B-mode ultrasound.",
-    "link": "https://jbpe.sums.ac.ir/article_49907.html"
+    "link": "https://jbpe.sums.ac.ir/article_49907.html",
+    "text_de": "Neue Publikation im Journal of Biomedical Physics and Engineering: Einstufung der nichtalkoholischen Fettleber mit vortrainierten CNNs und einem Random Forest anhand von B-Mode-Ultraschall."
   },
   {
     "date": "2024-01",
     "text": "New paper in Scientific Reports: machine learning approaches for early detection of non-alcoholic steatohepatitis (NASH) from clinical and blood parameters.",
-    "link": "https://www.nature.com/articles/s41598-024-51741-0"
+    "link": "https://www.nature.com/articles/s41598-024-51741-0",
+    "text_de": "Neue Publikation in Scientific Reports: Machine-Learning-Ansätze zur Früherkennung der nichtalkoholischen Steatohepatitis (NASH) aus klinischen und Blutparametern."
   },
   {
     "date": "2024",
     "text": "Started a joint PhD in Visual Neuroscience at Otto-von-Guericke University Magdeburg and the University of Groningen as a Marie Skłodowska-Curie Doctoral Candidate (EGRET-AAA, Project 9), working on deep learning for visual pathway anomalies in glaucoma.",
-    "link": "https://www.egret-aaa.eu/project-9/"
+    "link": "https://www.egret-aaa.eu/project-9/",
+    "text_de": "Beginn meiner gemeinsamen Promotion in visueller Neurowissenschaft an der Otto-von-Guericke-Universität Magdeburg und der Universität Groningen als Marie-Skłodowska-Curie-Doktorand (EGRET-AAA, Projekt 9) zu Deep Learning für Anomalien der Sehbahn bei Glaukom."
   }
 ]

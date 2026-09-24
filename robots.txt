@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /websites-/.claude/
+Disallow: /websites-/scripts/
+
+Sitemap: https://amirnaderiy.github.io/websites-/sitemap.xml

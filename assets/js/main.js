@@ -1,5 +1,18 @@
 (function () {
   var root = document.documentElement;
+  var de = root.lang === 'de';
+  var L = de
+    ? { dark: 'Dunkles Design aktivieren', light: 'Helles Design aktivieren', open: 'Menü öffnen', close: 'Menü schließen' }
+    : { dark: 'Switch to dark theme', light: 'Switch to light theme', open: 'Open menu', close: 'Close menu' };
+
+  // ----- language switch: remember the choice for the next visit -----
+  var langLink = document.querySelector('.lang-switch');
+  if (langLink) {
+    langLink.addEventListener('click', function () {
+      try { localStorage.setItem('lang', langLink.dataset.lang); } catch (e) {}
+      langLink.href = langLink.getAttribute('href').split('#')[0] + location.hash;
+    });
+  }
 
   // ----- theme toggle -----
   var themeBtn = document.querySelector('.theme-btn');
@@ -7,7 +20,7 @@
     return root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   }
   function syncThemeLabel() {
-    themeBtn.setAttribute('aria-label', currentTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+    themeBtn.setAttribute('aria-label', currentTheme() === 'dark' ? L.light : L.dark);
   }
   themeBtn.addEventListener('click', function () {
     var next = currentTheme() === 'dark' ? 'light' : 'dark';
@@ -23,7 +36,7 @@
   function setMenu(open) {
     links.classList.toggle('open', open);
     menuBtn.setAttribute('aria-expanded', String(open));
-    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    menuBtn.setAttribute('aria-label', open ? L.close : L.open);
   }
   menuBtn.addEventListener('click', function () { setMenu(!links.classList.contains('open')); });
   links.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });

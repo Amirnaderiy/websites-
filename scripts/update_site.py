@@ -11,7 +11,8 @@ google_scholar_author engine is used instead (more reliable from CI runners).
 
 Any paper that appears on Scholar and was not known before is added to
 data/publications.json and announced at the top of data/news.json.
-Only the standard library is used.
+It renders both language versions (index.html and de/index.html), plus
+sitemap.xml and robots.txt. Only the standard library is used.
 """
 
 import argparse
@@ -28,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PUBS_FILE = ROOT / "data" / "publications.json"
 NEWS_FILE = ROOT / "data" / "news.json"
-INDEX_FILE = ROOT / "index.html"
+SITE_FILE = ROOT / "data" / "site.json"
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -160,6 +161,8 @@ def merge(store, fetched, news, today):
             news.insert(0, {
                 "date": today.strftime("%Y-%m"),
                 "text": f"New paper published{venue}: “{pub['title']}”.",
+                "title": pub["title"],
+                "venue": pub["venue"],
                 "link": pub["url"],
                 "auto": True,
             })
@@ -169,37 +172,82 @@ def merge(store, fetched, news, today):
 
 # ---------------------------------------------------------------- rendering
 
+STRINGS = {
+    "en": {
+        "months": MONTHS,
+        "read_more": "Read more", "new_tab": " (opens in new tab)",
+        "new_paper": "New paper", "earlier": "Show earlier news",
+        "cited_by": "Cited by {n}", "other": "Other",
+        "stats": ["Publications", "Citations", "h-index", "i10-index"],
+        "synced_auto": "Publications are synced automatically from Google Scholar.",
+        "synced_on": "Publications synced from Google Scholar on {date}.",
+        "date": "{d} {m} {y}",
+        "og_locale": "en_US",
+        "job": "Doctoral Researcher in Visual Neuroscience and Biomedical AI",
+        "og_desc": "PhD researcher in visual neuroscience and biomedical AI. Deep learning, computer vision and medical imaging for glaucoma.",
+    },
+    "de": {
+        "months": "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez.".split(),
+        "read_more": "Mehr lesen", "new_tab": " (öffnet in neuem Tab)",
+        "new_paper": "Neue Publikation", "earlier": "Ältere News anzeigen",
+        "cited_by": "{n}× zitiert", "other": "Sonstige",
+        "stats": ["Publikationen", "Zitationen", "h-Index", "i10-Index"],
+        "synced_auto": "Publikationen werden automatisch aus Google Scholar übernommen.",
+        "synced_on": "Publikationen zuletzt am {date} aus Google Scholar übernommen.",
+        "date": "{d}. {m} {y}",
+        "og_locale": "de_DE",
+        "job": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI",
+        "og_desc": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI. Deep Learning, Computer Vision und medizinische Bildgebung für Glaukom.",
+    },
+}
+
+# (file, language, path of the page below the site root)
+PAGES = [("index.html", "en", ""), ("de/index.html", "de", "de/")]
+
 
 def esc(value):
     return html.escape(str(value), quote=True)
 
 
-def fmt_date(value):
+def fmt_date(value, t):
     parts = value.split("-")
     if len(parts) >= 2:
-        return f"{MONTHS[int(parts[1]) - 1]} {parts[0]}"
+        return f"{t['months'][int(parts[1]) - 1]} {parts[0]}"
     return parts[0]
 
 
-def render_news(news):
+def news_text(n, lang):
+    if lang == "de":
+        if n.get("text_de"):
+            return n["text_de"]
+        if n.get("auto") and n.get("title"):
+            venue = f" in {n['venue']}" if n.get("venue") else ""
+            return f"Neue Publikation{venue}: „{n['title']}“."
+    return n["text"]
+
+
+def render_news(news, t, lang):
     def item(n):
-        text = esc(n["text"])
+        text = esc(news_text(n, lang))
         if n.get("link"):
-            text += f' <a class="inline-link" href="{esc(n["link"])}" target="_blank" rel="noopener">Read more<span class="sr-only"> (opens in new tab)</span></a>'
-        tag = '<span class="news-tag">New paper</span>' if n.get("auto") else ""
+            text += (
+                f' <a class="inline-link" href="{esc(n["link"])}" target="_blank" rel="noopener">'
+                f'{t["read_more"]}<span class="sr-only">{t["new_tab"]}</span></a>'
+            )
+        tag = f'<span class="news-tag">{t["new_paper"]}</span>' if n.get("auto") else ""
         return (
-            f'<li class="news-item"><time datetime="{esc(n["date"])}">{fmt_date(n["date"])}</time>'
+            f'<li class="news-item"><time datetime="{esc(n["date"])}">{fmt_date(n["date"], t)}</time>'
             f'<p>{tag}{text}</p></li>'
         )
 
     out = ['<ol class="news-list">'] + [item(n) for n in news[:NEWS_VISIBLE]] + ["</ol>"]
     if len(news) > NEWS_VISIBLE:
-        out += ['<details class="more"><summary>Show earlier news</summary><ol class="news-list">']
+        out += [f'<details class="more"><summary>{t["earlier"]}</summary><ol class="news-list">']
         out += [item(n) for n in news[NEWS_VISIBLE:]] + ["</ol></details>"]
     return "\n".join(out)
 
 
-def render_publications(pubs):
+def render_publications(pubs, t):
     pubs = sorted(pubs, key=lambda p: (p.get("year") or 0), reverse=True)
     out, current = [], object()
     for p in pubs:
@@ -207,13 +255,13 @@ def render_publications(pubs):
             if out:
                 out.append("</ol>")
             current = p.get("year")
-            out.append(f'<h3 class="pub-year">{esc(current or "Other")}</h3><ol class="pub-list">')
+            out.append(f'<h3 class="pub-year">{esc(current or t["other"])}</h3><ol class="pub-list">')
         authors = SELF_NAME.sub(lambda m: f"<strong>{m.group(0)}</strong>", esc(p.get("authors", "")))
         cites = p.get("citations")
-        badge = f'<span class="badge">Cited by {cites}</span>' if cites else ""
+        badge = f'<span class="badge">{t["cited_by"].format(n=cites)}</span>' if cites else ""
         out.append(
             '<li class="pub">'
-            f'<a class="pub-title" href="{esc(p.get("url") or p.get("scholar_url") or "#")}" target="_blank" rel="noopener">{esc(p["title"])}</a>'
+            f'<a class="pub-title" href="{esc(p.get("url") or p.get("scholar_url") or "#")}" target="_blank" rel="noopener" lang="en">{esc(p["title"])}</a>'
             f'<p class="pub-authors">{authors}</p>'
             f'<p class="pub-venue"><em>{esc(p.get("venue", ""))}</em>{badge}</p>'
             "</li>"
@@ -223,28 +271,123 @@ def render_publications(pubs):
     return "\n".join(out)
 
 
-def render_stats(store):
+def render_stats(store, t):
     m = store.get("metrics")
-    count = len(store["publications"])
-    items = [("Publications", count)]
+    values = [len(store["publications"])]
     if m:
-        items += [("Citations", m["citations"]), ("h-index", m["h_index"]), ("i10-index", m["i10_index"])]
+        values += [m["citations"], m["h_index"], m["i10_index"]]
     return "\n".join(
-        f'<div class="stat"><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in items
+        f'<div class="stat"><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in zip(t["stats"], values)
     )
 
 
-def render_updated(store):
+def render_updated(store, t):
     if not store.get("last_synced"):
-        return "Publications are synced automatically from Google Scholar."
+        return t["synced_auto"]
     d = dt.date.fromisoformat(store["last_synced"])
-    return f"Publications synced from Google Scholar on {d.day} {MONTHS[d.month - 1]} {d.year}."
+    return t["synced_on"].format(date=t["date"].format(d=d.day, m=t["months"][d.month - 1], y=d.year))
 
 
-def replace_block(page, name, content):
+def render_head(site_url, lang, path, t, store):
+    url = site_url + path
+    image = site_url + "assets/img/profile.jpg"
+    person = {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "url": url,
+        "inLanguage": lang,
+        "mainEntity": {
+            "@type": "Person",
+            "@id": site_url + "#person",
+            "name": "Amir Reza Naderi Yaghouti",
+            "alternateName": ["Amir Naderi", "Amir Reza Naderi", "A. R. Naderi Yaghouti", "Amirreza Naderi"],
+            "givenName": "Amir Reza",
+            "familyName": "Naderi Yaghouti",
+            "url": site_url,
+            "image": image,
+            "email": "mailto:naderi.bme@gmail.com",
+            "jobTitle": t["job"],
+            "affiliation": [
+                {"@type": "CollegeOrUniversity", "name": "Otto-von-Guericke University Magdeburg", "url": "https://www.ovgu.de/"},
+                {"@type": "CollegeOrUniversity", "name": "University of Groningen", "url": "https://www.rug.nl/"},
+            ],
+            "alumniOf": {"@type": "CollegeOrUniversity", "name": "Islamic Azad University, Science and Research Branch"},
+            "knowsAbout": ["Deep learning", "Computer vision", "Medical image analysis", "Glaucoma",
+                           "Visual neuroscience", "Biomedical engineering", "Explainable AI"],
+            "sameAs": [
+                "https://www.linkedin.com/in/amirnaderiy",
+                "https://scholar.google.com/citations?user=WmUoRTsAAAAJ",
+                "https://www.researchgate.net/profile/Amir-Reza-Naderi-Yaghouti",
+                "https://github.com/Amirnaderiy",
+                "https://www.kaggle.com/amirnaderiy",
+            ],
+        },
+    }
+    works = [
+        {"@type": "ScholarlyArticle", "headline": p["title"], "datePublished": str(p.get("year") or ""),
+         "url": p.get("url") or "", "author": {"@id": site_url + "#person"}}
+        for p in store["publications"]
+    ]
+    person["mainEntity"]["subjectOf"] = works
+    title = "Amir Reza Naderi Yaghouti (Amir Naderi)"
+    lines = [
+        f'  <link rel="canonical" href="{esc(url)}">',
+        f'  <link rel="alternate" hreflang="en" href="{esc(site_url)}">',
+        f'  <link rel="alternate" hreflang="de" href="{esc(site_url)}de/">',
+        f'  <link rel="alternate" hreflang="x-default" href="{esc(site_url)}">',
+        '  <meta property="og:type" content="profile">',
+        '  <meta property="og:site_name" content="Amir Reza Naderi Yaghouti">',
+        f'  <meta property="og:title" content="{esc(title)}">',
+        f'  <meta property="og:description" content="{esc(t["og_desc"])}">',
+        f'  <meta property="og:url" content="{esc(url)}">',
+        f'  <meta property="og:image" content="{esc(image)}">',
+        '  <meta property="og:image:alt" content="Portrait of Amir Reza Naderi Yaghouti">',
+        f'  <meta property="og:locale" content="{t["og_locale"]}">',
+        f'  <meta property="og:locale:alternate" content="{"de_DE" if lang == "en" else "en_US"}">',
+        '  <meta property="profile:first_name" content="Amir Reza">',
+        '  <meta property="profile:last_name" content="Naderi Yaghouti">',
+        '  <meta name="twitter:card" content="summary_large_image">',
+        f'  <meta name="twitter:title" content="{esc(title)}">',
+        f'  <meta name="twitter:description" content="{esc(t["og_desc"])}">',
+        f'  <meta name="twitter:image" content="{esc(image)}">',
+        '  <script type="application/ld+json">',
+        json.dumps(person, indent=2, ensure_ascii=False).replace("</", "<\\/"),
+        "  </script>",
+    ]
+    return "\n".join(lines)
+
+
+def write_sitemap_and_robots(site_url):
+    today = dt.date.today().isoformat()
+    alts = (
+        f'    <xhtml:link rel="alternate" hreflang="en" href="{site_url}"/>\n'
+        f'    <xhtml:link rel="alternate" hreflang="de" href="{site_url}de/"/>\n'
+        f'    <xhtml:link rel="alternate" hreflang="x-default" href="{site_url}"/>\n'
+    )
+    urls = "".join(
+        f"  <url>\n    <loc>{site_url}{path}</loc>\n    <lastmod>{today}</lastmod>\n{alts}  </url>\n"
+        for _, _, path in PAGES
+    )
+    sitemap = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + urls + "</urlset>\n"
+    )
+    old = (ROOT / "sitemap.xml").read_text(encoding="utf-8") if (ROOT / "sitemap.xml").exists() else ""
+    # Only touch lastmod when something other than the date changed.
+    if re.sub(r"<lastmod>.*?</lastmod>", "", old) != re.sub(r"<lastmod>.*?</lastmod>", "", sitemap):
+        (ROOT / "sitemap.xml").write_text(sitemap, encoding="utf-8")
+    # Crawlers only read robots.txt at the domain root, so rules carry the site's path prefix.
+    base = urllib.parse.urlparse(site_url).path
+    (ROOT / "robots.txt").write_text(
+        f"User-agent: *\nAllow: /\nDisallow: {base}.claude/\nDisallow: {base}scripts/\n\n"
+        f"Sitemap: {site_url}sitemap.xml\n", encoding="utf-8")
+
+
+def replace_block(page, name, content, file):
     pattern = re.compile(rf"(<!-- AUTO:{name} -->)(.*?)(<!-- /AUTO:{name} -->)", re.S)
     if not pattern.search(page):
-        raise SystemExit(f"Marker AUTO:{name} not found in index.html")
+        raise SystemExit(f"Marker AUTO:{name} not found in {file}")
     return pattern.sub(lambda m: f"{m.group(1)}\n{content}\n{m.group(3)}", page)
 
 
@@ -273,13 +416,18 @@ def main():
             PUBS_FILE.write_text(json.dumps(store, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
             NEWS_FILE.write_text(json.dumps(news, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    page = INDEX_FILE.read_text(encoding="utf-8")
-    page = replace_block(page, "STATS", render_stats(store))
-    page = replace_block(page, "NEWS", render_news(news))
-    page = replace_block(page, "PUBLICATIONS", render_publications(store["publications"]))
-    page = replace_block(page, "UPDATED", render_updated(store))
-    INDEX_FILE.write_text(page, encoding="utf-8")
-
+    site_url = json.loads(SITE_FILE.read_text(encoding="utf-8"))["url"].rstrip("/") + "/"
+    for file, lang, path in PAGES:
+        t = STRINGS[lang]
+        target = ROOT / file
+        page = target.read_text(encoding="utf-8")
+        page = replace_block(page, "HEAD", render_head(site_url, lang, path, t, store), file)
+        page = replace_block(page, "STATS", render_stats(store, t), file)
+        page = replace_block(page, "NEWS", render_news(news, t, lang), file)
+        page = replace_block(page, "PUBLICATIONS", render_publications(store["publications"], t), file)
+        page = replace_block(page, "UPDATED", render_updated(store, t), file)
+        target.write_text(page, encoding="utf-8")
+    write_sitemap_and_robots(site_url)
 
 if __name__ == "__main__":
     main()
