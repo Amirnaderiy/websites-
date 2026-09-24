@@ -46,9 +46,9 @@ python3 scripts/update_site.py --fetch  # fetch Scholar, then re-render
 
 ## Publishing on GitHub Pages
 
-1. Merge this branch into `main`.
-2. Go to **Settings → Pages → Build and deployment**, choose **Deploy from a branch**, then **main** and **/ (root)**.
-3. Your site will be at `https://amirnaderiy.github.io/websites-/`.
+1. Go to **Settings → Pages → Build and deployment**.
+2. Under **Source**, choose **Deploy from a branch**. Pick the repository's default branch and **/ (root)**, then save.
+3. After about a minute the site is live at `https://amirnaderiy.github.io/websites-/`.
 
 ## Local preview
 

@@ -285,3 +285,22 @@ nav { display: flex; align-items: center; }
   .pub, .card { box-shadow: none; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- education ---------- */
+.edu-list { display: grid; gap: var(--space-4); max-width: 820px; }
+.edu { display: flex; gap: var(--space-6); align-items: center; }
+.edu-logos { display: flex; justify-content: center; gap: var(--space-2); flex: none; min-width: 152px; }
+.logo-tile {
+  --tile: 72px;
+  display: grid; place-items: center; width: var(--tile); height: var(--tile);
+  border-radius: var(--radius); border: 1px solid var(--color-border);
+  background: #FFFFFF; /* logos are designed for light backgrounds, keep tiles white in dark mode too */
+}
+.logo-tile img { width: calc(var(--tile) - 18px); height: calc(var(--tile) - 18px); object-fit: contain; }
+.edu-body h3 { font-size: 1.3rem; font-weight: 600; margin: var(--space-1) 0 var(--space-1); }
+.edu-body .entry-org { margin-bottom: 0; }
+@media (max-width: 559px) {
+  .edu { flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+  .edu-logos { min-width: 0; }
+  .logo-tile { --tile: 60px; }
+}
