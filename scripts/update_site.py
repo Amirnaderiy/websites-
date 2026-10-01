@@ -184,6 +184,7 @@ STRINGS = {
         "synced_on": "Publications synced from Google Scholar on {date}.",
         "date": "{d} {m} {y}",
         "og_locale": "en_US",
+        "page_title": "Amir Reza Naderi Yaghouti | PhD Researcher in Medical AI",
         "job": "Doctoral Researcher in Visual Neuroscience and Biomedical AI",
         "og_desc": "PhD researcher in visual neuroscience and biomedical AI. Deep learning, computer vision and medical imaging for glaucoma.",
     },
@@ -198,6 +199,7 @@ STRINGS = {
         "synced_on": "Publikationen zuletzt am {date} aus Google Scholar übernommen.",
         "date": "{d}. {m} {y}",
         "og_locale": "de_DE",
+        "page_title": "Amir Reza Naderi Yaghouti | Doktorand für medizinische KI",
         "job": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI",
         "og_desc": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI. Deep Learning, Computer Vision und medizinische Bildgebung für Glaukom.",
     },
@@ -370,7 +372,10 @@ def render_head(site_url, lang, path, t, store):
         "@context": "https://schema.org",
         "@type": "ProfilePage",
         "url": url,
+        "name": t["page_title"],
         "inLanguage": lang,
+        "primaryImageOfPage": {"@type": "ImageObject", "url": image, "width": 800, "height": 1000},
+        "isPartOf": {"@id": site_url + "#website"},
         "mainEntity": {
             "@type": "Person",
             "@id": site_url + "#person",
@@ -407,7 +412,17 @@ def render_head(site_url, lang, path, t, store):
         for p in store["publications"] if not p.get("status")
     ]
     person["mainEntity"]["subjectOf"] = works
-    title = "Amir Reza Naderi Yaghouti (Amir Naderi)"
+    website = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": site_url + "#website",
+        "url": site_url,
+        "name": "Amir Reza Naderi Yaghouti",
+        "alternateName": ["Amir Naderi", "A. R. Naderi Yaghouti"],
+        "inLanguage": ["en", "de"],
+        "publisher": {"@id": site_url + "#person"},
+    }
+    title = t["page_title"]
     lines = [
         f'  <link rel="canonical" href="{esc(url)}">',
         f'  <link rel="alternate" hreflang="en" href="{esc(site_url)}">',
@@ -419,6 +434,8 @@ def render_head(site_url, lang, path, t, store):
         f'  <meta property="og:description" content="{esc(t["og_desc"])}">',
         f'  <meta property="og:url" content="{esc(url)}">',
         f'  <meta property="og:image" content="{esc(image)}">',
+        '  <meta property="og:image:width" content="800">',
+        '  <meta property="og:image:height" content="1000">',
         '  <meta property="og:image:alt" content="Portrait of Amir Reza Naderi Yaghouti">',
         f'  <meta property="og:locale" content="{t["og_locale"]}">',
         f'  <meta property="og:locale:alternate" content="{"de_DE" if lang == "en" else "en_US"}">',
@@ -428,6 +445,9 @@ def render_head(site_url, lang, path, t, store):
         f'  <meta name="twitter:title" content="{esc(title)}">',
         f'  <meta name="twitter:description" content="{esc(t["og_desc"])}">',
         f'  <meta name="twitter:image" content="{esc(image)}">',
+        '  <script type="application/ld+json">',
+        json.dumps(website, indent=2, ensure_ascii=False).replace("</", "<\\/"),
+        "  </script>",
         '  <script type="application/ld+json">',
         json.dumps(person, indent=2, ensure_ascii=False).replace("</", "<\\/"),
         "  </script>",
