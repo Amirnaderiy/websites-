@@ -131,6 +131,26 @@ def fetch_scholar_serpapi(user, key):
     return pubs, metrics
 
 
+def fetch_with_retries(user, attempts=3, waits=(45, 120)):
+    """Fetch Scholar data, retrying a few times; return None if every attempt fails."""
+    import time
+    key = os.environ.get("SERPAPI_KEY")
+    for i in range(attempts):
+        try:
+            return fetch_scholar_serpapi(user, key) if key else fetch_scholar_direct(user)
+        except Exception as exc:
+            print(f"attempt {i + 1}/{attempts} failed: {exc}", file=sys.stderr)
+            if i < attempts - 1:
+                time.sleep(waits[min(i, len(waits) - 1)])
+    msg = "Could not reach Google Scholar (it probably blocked the request); the site keeps its current numbers."
+    if os.environ.get("GITHUB_ACTIONS"):
+        # Shows as a yellow warning on the run in the Actions tab.
+        print(f"::warning title=Google Scholar::{msg} Adding a SERPAPI_KEY secret makes updates reliable.")
+    else:
+        print("warning: " + msg, file=sys.stderr)
+    return None
+
+
 def _norm(title):
     return re.sub(r"[^a-z0-9]", "", title.lower())
 
@@ -180,8 +200,7 @@ STRINGS = {
         "cited_by": "Cited by {n}", "other": "Other", "under_review": "Under review",
         "paper": "Paper", "cite": "Cite", "copy": "Copy BibTeX", "copied": "Copied",
         "stats": ["Publications", "Citations", "h-index", "i10-index"],
-        "synced_auto": "Publications are synced automatically from Google Scholar.",
-        "synced_on": "Publications synced from Google Scholar on {date}.",
+        "synced_auto": "Publications and citation counts are updated daily from Google Scholar.",
         "date": "{d} {m} {y}",
         "og_locale": "en_US",
         "page_title": "Amir Reza Naderi Yaghouti | PhD Researcher in Medical AI",
@@ -195,8 +214,7 @@ STRINGS = {
         "cited_by": "{n}× zitiert", "other": "Sonstige", "under_review": "In Begutachtung",
         "paper": "Artikel", "cite": "Zitieren", "copy": "BibTeX kopieren", "copied": "Kopiert",
         "stats": ["Publikationen", "Zitationen", "h-Index", "i10-Index"],
-        "synced_auto": "Publikationen werden automatisch aus Google Scholar übernommen.",
-        "synced_on": "Publikationen zuletzt am {date} aus Google Scholar übernommen.",
+        "synced_auto": "Publikationen und Zitationszahlen werden täglich aus Google Scholar aktualisiert.",
         "date": "{d}. {m} {y}",
         "og_locale": "de_DE",
         "page_title": "Amir Reza Naderi Yaghouti | Doktorand für medizinische KI",
@@ -359,10 +377,7 @@ def render_stats(store, t):
 
 
 def render_updated(store, t):
-    if not store.get("last_synced"):
-        return t["synced_auto"]
-    d = dt.date.fromisoformat(store["last_synced"])
-    return t["synced_on"].format(date=t["date"].format(d=d.day, m=t["months"][d.month - 1], y=d.year))
+    return t["synced_auto"]
 
 
 def render_head(site_url, lang, path, t, store):
@@ -498,21 +513,22 @@ def main():
     news = json.loads(NEWS_FILE.read_text(encoding="utf-8"))
 
     if args.fetch:
-        key = os.environ.get("SERPAPI_KEY")
-        try:
-            if key:
-                fetched, metrics = fetch_scholar_serpapi(store["scholar_user"], key)
-            else:
-                fetched, metrics = fetch_scholar_direct(store["scholar_user"])
-        except Exception as exc:  # keep the current site if Scholar is unreachable
-            print(f"warning: could not fetch Google Scholar ({exc}); keeping existing data", file=sys.stderr)
-        else:
+        result = fetch_with_retries(store["scholar_user"])
+        if result:
+            fetched, metrics = result
+            before = json.dumps([{k: v for k, v in store.items() if k != "last_synced"}, news], sort_keys=True)
             if metrics:
                 store["metrics"] = metrics
             added = merge(store, fetched, news, dt.date.today())
-            print(f"Scholar: {len(fetched)} papers, {len(added)} new")
-            PUBS_FILE.write_text(json.dumps(store, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            NEWS_FILE.write_text(json.dumps(news, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            after = json.dumps([{k: v for k, v in store.items() if k != "last_synced"}, news], sort_keys=True)
+            print(f"Scholar: {len(fetched)} papers, {len(added)} new, metrics {store.get('metrics')}")
+            # Only save when something besides the sync date changed, so daily runs
+            # don't create a commit every day.
+            if before != after:
+                PUBS_FILE.write_text(json.dumps(store, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                NEWS_FILE.write_text(json.dumps(news, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            else:
+                print("No changes on Google Scholar.")
 
     site_url = json.loads(SITE_FILE.read_text(encoding="utf-8"))["url"].rstrip("/") + "/"
     for file, lang, path in PAGES:

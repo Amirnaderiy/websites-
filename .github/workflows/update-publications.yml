@@ -2,7 +2,7 @@ name: Update publications from Google Scholar
 
 on:
   schedule:
-    - cron: "0 6 * * 1" # every Monday 06:00 UTC
+    - cron: "23 5 * * *" # every day at 05:23 UTC
   workflow_dispatch: # "Run workflow" button in the Actions tab
   push:
     paths:
@@ -22,9 +22,9 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
