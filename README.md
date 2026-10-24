@@ -31,7 +31,7 @@ The first sync imports your existing papers without creating News items, so olde
 
 Google Scholar sometimes blocks automated requests from GitHub's servers. If the Action log shows `could not fetch Google Scholar`, the site keeps its current data. To make syncing reliable:
 
-1. Create a free account at [serpapi.com](https://serpapi.com) (100 searches/month is plenty).
+1. Create a free account at [serpapi.com](https://serpapi.com) (250 searches/month; four runs a day use about 120).
 2. In the repo, go to **Settings → Secrets and variables → Actions** and add a secret named `SERPAPI_KEY`.
 
 ## Adding a news item by hand
