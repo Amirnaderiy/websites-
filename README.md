@@ -16,13 +16,13 @@ A static, single-page CV site. It uses plain HTML, CSS and a little JavaScript, 
 | `data/publications.json` | Publications list, synced from Google Scholar. Optional per paper: `"doi"` adds a DOI button, and `"status": "under_review"` lists it under *Under review*. |
 | `data/news.json` | News items. Add your own entries at the top; paper announcements are added automatically. |
 | `scripts/update_site.py` | Fetches Google Scholar and renders the publications, news and metrics into `index.html`. |
-| `.github/workflows/update-publications.yml` | Runs the script every day, and when you click **Run workflow**. |
+| `.github/workflows/update-publications.yml` | Runs the script four times a day (Google Scholar often blocks single attempts), and when you click **Run workflow**. |
 
 The sections between `<!-- AUTO:... -->` markers in `index.html` are generated. Don't edit them by hand.
 
 ## How automatic publications work
 
-1. Every day a GitHub Action opens your Google Scholar profile (`WmUoRTsAAAAJ`).
+1. Four times a day a GitHub Action opens your Google Scholar profile (`WmUoRTsAAAAJ`).
 2. Any paper that isn't already in `data/publications.json` is added. A **"New paper"** item is also added to the top of `data/news.json`.
 3. Citation count, h-index and i10-index are refreshed.
 4. The action commits the changes, and GitHub Pages republishes the site.

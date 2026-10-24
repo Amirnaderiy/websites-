@@ -2,7 +2,7 @@ name: Update publications from Google Scholar
 
 on:
   schedule:
-    - cron: "23 5 * * *" # every day at 05:23 UTC
+    - cron: "23 */6 * * *" # four times a day (00:23, 06:23, 12:23, 18:23 UTC); Scholar often blocks single attempts
   workflow_dispatch: # "Run workflow" button in the Actions tab
   push:
     paths:
