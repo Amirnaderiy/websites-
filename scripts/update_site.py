@@ -137,7 +137,10 @@ def fetch_with_retries(user, attempts=3, waits=(45, 120)):
     key = os.environ.get("SERPAPI_KEY")
     for i in range(attempts):
         try:
-            return fetch_scholar_serpapi(user, key) if key else fetch_scholar_direct(user)
+            result = fetch_scholar_serpapi(user, key) if key else fetch_scholar_direct(user)
+            if os.environ.get("GITHUB_ACTIONS"):
+                print(f"::notice title=Google Scholar::Fetched via {'SerpAPI' if key else 'direct request (no SERPAPI_KEY secret)'}")
+            return result
         except Exception as exc:
             print(f"attempt {i + 1}/{attempts} failed: {exc}", file=sys.stderr)
             if i < attempts - 1:
