@@ -42,7 +42,7 @@ Add an entry to the top of `data/news.json`:
 { "date": "2026-09", "text": "Presented my work at ARVO 2026.", "link": "https://..." }
 ```
 
-`date` can be `YYYY-MM` or `YYYY`, and `link` is optional. Add `"text_de"` for the German page; without it, the English text is shown there too. When you push, the Action re-renders the page. You can also run it locally:
+`date` can be `YYYY-MM` or `YYYY`, and `link` is optional. `type` (`talk`, `poster`, `paper` or `milestone`) adds a small label. Add `"text_de"` for the German page; without it, the English text is shown there too. When you push, the Action re-renders the page. You can also run it locally:
 
 ```bash
 python3 scripts/update_site.py          # re-render only

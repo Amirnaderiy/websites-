@@ -202,13 +202,15 @@ STRINGS = {
         "new_paper": "New paper", "earlier": "Show earlier news",
         "cited_by": "Cited by {n}", "other": "Other", "under_review": "Under review",
         "paper": "Paper", "cite": "Cite", "copy": "Copy BibTeX", "copied": "Copied",
-        "stats": ["Publications", "Citations", "h-index", "i10-index"],
+        "stats": ["Citations", "h-index", "i10-index", "Papers"],
+        "pills": {"talk": "Talk", "poster": "Poster", "paper": "Paper", "milestone": "Milestone"},
+        "citations": "{n} citations", "citation": "1 citation", "under_review_chip": "under review",
         "synced_auto": "Publications and citation counts are updated daily from Google Scholar.",
         "date": "{d} {m} {y}",
         "og_locale": "en_US",
-        "page_title": "Amir Reza Naderi Yaghouti | PhD Researcher in Medical AI",
-        "job": "Doctoral Researcher in Visual Neuroscience and Biomedical AI",
-        "og_desc": "PhD researcher in visual neuroscience and biomedical AI. Deep learning, computer vision and medical imaging for glaucoma.",
+        "page_title": "Amir Reza Naderi Yaghouti – AI in Medicine Researcher",
+        "job": "Researcher in AI in Medicine, Marie Skłodowska-Curie Doctoral Fellow",
+        "og_desc": "Machine learning and deep learning for medical data: MRI, retinal and ultrasound images, clinical records and lab biomarkers.",
     },
     "de": {
         "months": "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez.".split(),
@@ -216,13 +218,15 @@ STRINGS = {
         "new_paper": "Neue Publikation", "earlier": "Ältere News anzeigen",
         "cited_by": "{n}× zitiert", "other": "Sonstige", "under_review": "In Begutachtung",
         "paper": "Artikel", "cite": "Zitieren", "copy": "BibTeX kopieren", "copied": "Kopiert",
-        "stats": ["Publikationen", "Zitationen", "h-Index", "i10-Index"],
+        "stats": ["Zitationen", "h-Index", "i10-Index", "Artikel"],
+        "pills": {"talk": "Vortrag", "poster": "Poster", "paper": "Publikation", "milestone": "Meilenstein"},
+        "citations": "{n} Zitationen", "citation": "1 Zitation", "under_review_chip": "in Begutachtung",
         "synced_auto": "Publikationen und Zitationszahlen werden täglich aus Google Scholar aktualisiert.",
         "date": "{d}. {m} {y}",
         "og_locale": "de_DE",
-        "page_title": "Amir Reza Naderi Yaghouti | Doktorand für medizinische KI",
-        "job": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI",
-        "og_desc": "Doktorand in visueller Neurowissenschaft und biomedizinischer KI. Deep Learning, Computer Vision und medizinische Bildgebung für Glaukom.",
+        "page_title": "Amir Reza Naderi Yaghouti – Forscher für KI in der Medizin",
+        "job": "Forscher für KI in der Medizin, Marie-Skłodowska-Curie-Doktorand",
+        "og_desc": "Maschinelles Lernen und Deep Learning für medizinische Daten: MRT-, Netzhaut- und Ultraschallbilder, klinische Daten und Laborbiomarker.",
     },
 }
 
@@ -256,18 +260,19 @@ def render_news(news, t, lang):
         text = esc(news_text(n, lang))
         if n.get("link"):
             text += (
-                f' <a class="inline-link" href="{esc(n["link"])}" target="_blank" rel="noopener">'
+                f' <a class="more-link" href="{esc(n["link"])}" target="_blank" rel="noopener">'
                 f'{t["read_more"]}<span class="sr-only">{t["new_tab"]}</span></a>'
             )
-        tag = f'<span class="news-tag">{t["new_paper"]}</span>' if n.get("auto") else ""
+        kind = "paper" if n.get("auto") else n.get("type")
+        pill = f'<span class="pill">{t["pills"][kind]}</span>' if kind in t["pills"] else ""
         return (
-            f'<li class="news-item"><time datetime="{esc(n["date"])}">{fmt_date(n["date"], t)}</time>'
-            f'<p>{tag}{text}</p></li>'
+            f'<li><time datetime="{esc(n["date"])}">{fmt_date(n["date"], t)}</time>'
+            f'<p>{pill}{text}</p></li>'
         )
 
-    out = ['<ol class="news-list">'] + [item(n) for n in news[:NEWS_VISIBLE]] + ["</ol>"]
+    out = ['<ol class="timeline">'] + [item(n) for n in news[:NEWS_VISIBLE]] + ["</ol>"]
     if len(news) > NEWS_VISIBLE:
-        out += [f'<details class="more"><summary>{t["earlier"]}</summary><ol class="news-list">']
+        out += [f'<details class="more"><summary>{t["earlier"]}</summary><ol class="timeline">']
         out += [item(n) for n in news[NEWS_VISIBLE:]] + ["</ol></details>"]
     return "\n".join(out)
 
@@ -314,38 +319,43 @@ def bibtex(p):
     return f"@article{{{first}{p.get('year') or ''}{word},\n{body}\n}}"
 
 
-def render_pub(p, t):
-    authors = SELF_NAME.sub(lambda m: f"<strong>{m.group(0)}</strong>", esc(p.get("authors", "")))
-    cites = p.get("citations")
-    short = venue_short(p.get("venue", ""))
-    meta = f'<span class="venue-tag">{esc(short)}</span>' if short else ""
-    meta += f'<em>{esc(p.get("venue", ""))}</em>'
-    if cites:
-        meta += f'<span class="badge">{t["cited_by"].format(n=cites)}</span>'
+def render_pub(p, t, max_cites):
+    authors = SELF_NAME.sub(lambda m: f"<b>{m.group(0)}</b>", esc(p.get("authors", "")))
+    review = p.get("status") == "under_review"
+    short = venue_short(p.get("venue", "")) or p.get("venue", "")
+    chip = esc(short) + (f' · {t["under_review_chip"]}' if review else "")
+    top = f'<span class="venue{" review" if review else ""}">{chip}</span>'
+    if p.get("year"):
+        top += f'<span class="yr">{esc(p["year"])}</span>'
+    title = esc(p["title"])
+    if p.get("url"):
+        title = f'<a href="{esc(p["url"])}" target="_blank" rel="noopener">{title}</a>'
     links = []
     if p.get("url"):
-        links.append(f'<a class="pub-link" href="{esc(p["url"])}" target="_blank" rel="noopener">{t["paper"]}</a>')
+        links.append(f'<a class="mini" href="{esc(p["url"])}" target="_blank" rel="noopener">{t["paper"]}</a>')
     if p.get("doi"):
-        links.append(f'<a class="pub-link" href="https://doi.org/{esc(p["doi"])}" target="_blank" rel="noopener">DOI</a>')
+        links.append(f'<a class="mini" href="https://doi.org/{esc(p["doi"])}" target="_blank" rel="noopener">DOI</a>')
     if p.get("scholar_url"):
-        links.append(f'<a class="pub-link" href="{esc(p["scholar_url"])}" target="_blank" rel="noopener">Scholar</a>')
-    cite = ""
-    if p.get("status") != "under_review":
-        cite = (
-            f'<details class="cite"><summary class="pub-link">{t["cite"]}</summary>'
+        links.append(f'<a class="mini" href="{esc(p["scholar_url"])}" target="_blank" rel="noopener">Scholar</a>')
+    if not review:
+        links.append(
+            f'<details class="cite"><summary class="mini">{t["cite"]}</summary>'
             f'<div class="cite-box"><pre><code>{esc(bibtex(p))}</code></pre>'
             f'<button type="button" class="copy-btn" data-copied="{t["copied"]}">{t["copy"]}</button></div></details>'
         )
-    title_html = esc(p["title"])
-    if p.get("url"):
-        title_html = f'<a class="pub-title" href="{esc(p["url"])}" target="_blank" rel="noopener" lang="en">{title_html}</a>'
-    else:
-        title_html = f'<span class="pub-title" lang="en">{title_html}</span>'
+    cites = p.get("citations") or 0
+    meter = ""
+    if cites:
+        label = t["citation"] if cites == 1 else t["citations"].format(n=cites)
+        meter = (f'<span class="cites"><span class="meter"><i data-w="{round(100 * cites / max_cites)}"></i></span>'
+                 f'{label}</span>')
+    venue_full = "" if review else f'<p class="venue-full">{esc(p.get("venue", ""))}</p>'
     return (
-        '<li class="pub">' + title_html
-        + (f'<p class="pub-authors">{authors}</p>' if authors else "")
-        + f'<p class="pub-venue">{meta}</p>'
-        + (f'<div class="pub-links">{"".join(links)}{cite}</div>' if links or cite else "")
+        f'<li class="pub reveal"><div class="pub-top">{top}</div>'
+        f'<h3 lang="en">{title}</h3>'
+        + (f'<p class="authors">{authors}</p>' if authors else "")
+        + venue_full
+        + (f'<div class="pub-bottom">{"".join(links)}{meter}</div>' if links or meter else "")
         + "</li>"
     )
 
@@ -353,29 +363,16 @@ def render_pub(p, t):
 def render_publications(pubs, t):
     pending = [p for p in pubs if p.get("status")]
     published = sorted((p for p in pubs if not p.get("status")), key=lambda p: (p.get("year") or 0), reverse=True)
-    groups = []
-    if pending:
-        groups.append((t["under_review"], pending))
-    for p in published:
-        label = p.get("year") or t["other"]
-        if not groups or groups[-1][0] != label:
-            groups.append((label, []))
-        groups[-1][1].append(p)
-    out = []
-    for label, items in groups:
-        out.append(f'<h3 class="pub-year">{esc(label)}</h3><ol class="pub-list">')
-        out += [render_pub(p, t) for p in items]
-        out.append("</ol>")
-    return "\n".join(out)
+    max_cites = max([p.get("citations") or 0 for p in pubs] + [1])
+    return '<ol class="pubs">\n' + "\n".join(render_pub(p, t, max_cites) for p in pending + published) + "\n</ol>"
 
 
 def render_stats(store, t):
-    m = store.get("metrics")
-    values = [sum(1 for p in store["publications"] if not p.get("status"))]
-    if m:
-        values += [m["citations"], m["h_index"], m["i10_index"]]
+    m = store.get("metrics") or {}
+    papers = sum(1 for p in store["publications"] if not p.get("status"))
+    values = [m.get("citations"), m.get("h_index"), m.get("i10_index"), papers]
     return "\n".join(
-        f'<div class="stat"><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in zip(t["stats"], values)
+        f'<div><dt>{esc(k)}</dt><dd>{esc(v)}</dd></div>' for k, v in zip(t["stats"], values) if v is not None
     )
 
 
@@ -410,8 +407,8 @@ def render_head(site_url, lang, path, t, store):
                 {"@type": "CollegeOrUniversity", "name": "University of Groningen", "url": "https://www.rug.nl/"},
             ],
             "alumniOf": {"@type": "CollegeOrUniversity", "name": "Islamic Azad University, Science and Research Branch"},
-            "knowsAbout": ["Deep learning", "Computer vision", "Medical image analysis", "Glaucoma",
-                           "Visual neuroscience", "Biomedical engineering", "Explainable AI"],
+            "knowsAbout": ["Artificial intelligence in medicine", "Machine learning", "Deep learning", "Medical image analysis",
+                           "Foundation models", "Explainable AI", "Glaucoma", "Biomedical engineering"],
             "sameAs": [
                 "https://www.linkedin.com/in/amirnaderiy",
                 "https://scholar.google.com/citations?user=WmUoRTsAAAAJ",
