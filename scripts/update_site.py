@@ -197,6 +197,7 @@ def merge(store, fetched, news, today):
 
 STRINGS = {
     "en": {
+        "lang": "en",
         "months": MONTHS,
         "read_more": "Read more", "new_tab": " (opens in new tab)",
         "new_paper": "New paper", "earlier": "Show earlier news",
@@ -205,6 +206,7 @@ STRINGS = {
         "stats": ["Citations", "h-index", "i10-index", "Papers"],
         "pills": {"talk": "Talk", "poster": "Poster", "paper": "Paper", "milestone": "Milestone"},
         "citations": "{n} citations", "citation": "1 citation", "under_review_chip": "under review",
+        "all": "All", "filter_label": "Filter publications by topic", "showing": "Showing {n} of {total}",
         "synced_auto": "Publications and citation counts are updated daily from Google Scholar.",
         "date": "{d} {m} {y}",
         "og_locale": "en_US",
@@ -213,6 +215,7 @@ STRINGS = {
         "og_desc": "Machine learning and deep learning for medical data: MRI, retinal and ultrasound images, clinical records and lab biomarkers.",
     },
     "de": {
+        "lang": "de",
         "months": "Jan. Feb. März Apr. Mai Juni Juli Aug. Sept. Okt. Nov. Dez.".split(),
         "read_more": "Mehr lesen", "new_tab": " (öffnet in neuem Tab)",
         "new_paper": "Neue Publikation", "earlier": "Ältere News anzeigen",
@@ -221,6 +224,7 @@ STRINGS = {
         "stats": ["Zitationen", "h-Index", "i10-Index", "Artikel"],
         "pills": {"talk": "Vortrag", "poster": "Poster", "paper": "Publikation", "milestone": "Meilenstein"},
         "citations": "{n} Zitationen", "citation": "1 Zitation", "under_review_chip": "in Begutachtung",
+        "all": "Alle", "filter_label": "Publikationen nach Thema filtern", "showing": "{n} von {total} angezeigt",
         "synced_auto": "Publikationen und Zitationszahlen werden täglich aus Google Scholar aktualisiert.",
         "date": "{d}. {m} {y}",
         "og_locale": "de_DE",
@@ -319,7 +323,53 @@ def bibtex(p):
     return f"@article{{{first}{p.get('year') or ''}{word},\n{body}\n}}"
 
 
+# Topic tags for the publication filter. Each paper is tagged from its title and venue;
+# a paper can override this with a "topics" list in data/publications.json.
+# Groups and tags only appear on the page when at least one paper has them.
+TOPIC_GROUPS = [
+    ("area", {"en": "Area", "de": "Bereich"}, [
+        ("liver", "Liver disease", "Lebererkrankungen", r"liver|steatohepatitis|nafld|\bnash\b|hepat"),
+        ("ovarian", "Ovarian cancer", "Eierstockkrebs", r"ovarian"),
+        ("glaucoma", "Glaucoma", "Glaukom", r"glaucoma"),
+    ]),
+    ("task", {"en": "Task", "de": "Aufgabe"}, [
+        ("classification", "Classification", "Klassifikation", r"classif|detection|discriminat|diagnos|grading"),
+        ("segmentation", "Segmentation", "Segmentierung", r"segment"),
+        ("review", "Review", "Übersichtsarbeit", r"\breview\b"),
+    ]),
+    ("method", {"en": "Method", "de": "Methode"}, [
+        ("ml", "Machine learning", "Maschinelles Lernen", r"machine learning|random forest|texture|radiomic|svm|xgboost"),
+        ("dl", "Deep learning", "Deep Learning", r"deep learning|convolutional|\bcnn|neural network|foundation model"),
+        ("fm", "Foundation models", "Foundation Models", r"foundation model"),
+    ]),
+    ("data", {"en": "Data", "de": "Daten"}, [
+        ("ultrasound", "Ultrasound", "Ultraschall", r"ultrasound|b-mode"),
+        ("mri", "MRI", "MRT", r"\bmri\b|magnetic resonance"),
+        ("fundus", "Retinal images", "Netzhautbilder", r"fundus|retina|\boct\b"),
+        ("clinical", "Clinical & lab data", "Klinik- & Labordaten", r"clinical|blood|laborator|biomarker"),
+        ("imaging", "Medical imaging", "Medizinische Bildgebung", r"medical imag|imaging|images|ultrasound|b-mode|\bmri\b|fundus|retina"),
+    ]),
+]
+TOPICS = {key: (en, de, rx) for _, _, items in TOPIC_GROUPS for key, en, de, rx in items}
+
+
+def topics_for(p):
+    if p.get("topics"):
+        return [k for k in p["topics"] if k in TOPICS]
+    text = f'{p.get("title", "")} {p.get("venue", "")}'.lower()
+    tags = [k for k, (_, _, rx) in TOPICS.items() if re.search(rx, text)]
+    if "review" in tags and "classification" in tags:
+        tags.remove("classification")  # a review about detection is not itself a classifier
+    return tags
+
+
+def topic_label(key, t):
+    en, de, _ = TOPICS[key]
+    return de if t["lang"] == "de" else en
+
+
 def render_pub(p, t, max_cites):
+    tags = topics_for(p)
     authors = SELF_NAME.sub(lambda m: f"<b>{m.group(0)}</b>", esc(p.get("authors", "")))
     review = p.get("status") == "under_review"
     short = venue_short(p.get("venue", "")) or p.get("venue", "")
@@ -351,10 +401,11 @@ def render_pub(p, t, max_cites):
                  f'{label}</span>')
     venue_full = "" if review else f'<p class="venue-full">{esc(p.get("venue", ""))}</p>'
     return (
-        f'<li class="pub reveal"><div class="pub-top">{top}</div>'
+        f'<li class="pub reveal" data-tags="{" ".join(tags)}"><div class="pub-top">{top}</div>'
         f'<h3 lang="en">{title}</h3>'
         + (f'<p class="authors">{authors}</p>' if authors else "")
         + venue_full
+        + (f'<ul class="ptags">{"".join(f"<li>{esc(topic_label(k, t))}</li>" for k in tags)}</ul>' if tags else "")
         + (f'<div class="pub-bottom">{"".join(links)}{meter}</div>' if links or meter else "")
         + "</li>"
     )
@@ -363,8 +414,28 @@ def render_pub(p, t, max_cites):
 def render_publications(pubs, t):
     pending = [p for p in pubs if p.get("status")]
     published = sorted((p for p in pubs if not p.get("status")), key=lambda p: (p.get("year") or 0), reverse=True)
+    ordered = pending + published
     max_cites = max([p.get("citations") or 0 for p in pubs] + [1])
-    return '<ol class="pubs">\n' + "\n".join(render_pub(p, t, max_cites) for p in pending + published) + "\n</ol>"
+    counts = {}
+    for p in ordered:
+        for k in topics_for(p):
+            counts[k] = counts.get(k, 0) + 1
+    total = len(ordered)
+    groups = []
+    for _, names, items in TOPIC_GROUPS:
+        chips = "".join(
+            f'<button type="button" class="fchip" data-filter="{k}" aria-pressed="false">{esc(de if t["lang"] == "de" else en)}'
+            f'<span class="n">{counts[k]}</span></button>'
+            for k, en, de, _ in items if counts.get(k))
+        if chips:
+            groups.append(f'<div class="fgroup"><span class="flabel">{names[t["lang"]]}</span>{chips}</div>')
+    bar = (
+        f'<div class="pub-filter" role="group" aria-label="{t["filter_label"]}">'
+        f'<div class="fgroup fgroup-all"><button type="button" class="fchip active" data-filter="all" aria-pressed="true">{t["all"]}'
+        f'<span class="n">{total}</span></button></div>' + "".join(groups) + "</div>"
+        f'<p class="pub-count" aria-live="polite" data-template="{esc(t["showing"])}">{t["showing"].format(n=total, total=total)}</p>'
+    )
+    return bar + '\n<ol class="pubs">\n' + "\n".join(render_pub(p, t, max_cites) for p in ordered) + "\n</ol>"
 
 
 def render_stats(store, t):

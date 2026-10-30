@@ -13,7 +13,7 @@ A static, single-page CV site. It uses plain HTML, CSS and a little JavaScript, 
 | `assets/img/profile.jpg` | Your photo (portrait orientation, about 800×1000 px). |
 | `favicon.*`, `apple-touch-icon.png`, `icon-512.png`, `site.webmanifest` | The site icon (navy "AN" monogram) shown in browser tabs and next to the site in Google results. |
 | `assets/cv/Amir-Reza-Naderi-Yaghouti-CV.pdf` | The CV behind the **Download CV** buttons. Replace the file, keeping the same name, to update it. |
-| `data/publications.json` | Publications list, synced from Google Scholar. Optional per paper: `"doi"` adds a DOI button, and `"status": "under_review"` lists it under *Under review*. |
+| `data/publications.json` | Publications list, synced from Google Scholar. Optional per paper: `"doi"` adds a DOI button, `"status": "under_review"` marks it as under review, and `"topics"` (e.g. `["liver", "classification"]`) overrides the automatic topic tags used by the publication filter. |
 | `data/news.json` | News items. Add your own entries at the top; paper announcements are added automatically. |
 | `scripts/update_site.py` | Fetches Google Scholar and renders the publications, news and metrics into `index.html`. |
 | `.github/workflows/update-publications.yml` | Runs the script four times a day (Google Scholar often blocks single attempts), and when you click **Run workflow**. |

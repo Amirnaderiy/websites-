@@ -198,6 +198,59 @@
     if (m) copyText(m.dataset.email, m, L.copy, L.copied);
   });
 
+  // ----- publication filter: chips with counts, animated reflow (FLIP) -----
+  var filter = document.querySelector('.pub-filter');
+  if (filter) {
+    var chips = Array.prototype.slice.call(filter.querySelectorAll('.fchip'));
+    var items = Array.prototype.slice.call(document.querySelectorAll('.pubs > .pub'));
+    var countEl = document.querySelector('.pub-count');
+    var busy = false;
+    function matches(li, f) { return f === 'all' || (' ' + li.dataset.tags + ' ').indexOf(' ' + f + ' ') > -1; }
+    function markTags(f) {
+      items.forEach(function (li) {
+        var keys = (li.dataset.tags || '').split(' ');
+        li.querySelectorAll('.ptags li').forEach(function (tag, i) { tag.classList.toggle('hit', keys[i] === f); });
+      });
+    }
+    function setCount(n) {
+      if (countEl) countEl.textContent = countEl.dataset.template.replace('{n}', n).replace('{total}', items.length);
+    }
+    function applyFilter(f) {
+      if (busy) return;
+      var show = items.filter(function (li) { return matches(li, f); });
+      var leaving = items.filter(function (li) { return !li.hidden && show.indexOf(li) < 0; });
+      var entering = show.filter(function (li) { return li.hidden; });
+      var staying = show.filter(function (li) { return !li.hidden; });
+      markTags(f); setCount(show.length);
+      if (reduce) { items.forEach(function (li) { li.hidden = show.indexOf(li) < 0; li.classList.remove('pre'); }); return; }
+      busy = true;
+      leaving.forEach(function (li) { li.classList.add('is-out'); });
+      setTimeout(function () {
+        var first = staying.map(function (li) { return li.getBoundingClientRect(); });
+        leaving.forEach(function (li) { li.hidden = true; li.classList.remove('is-out'); });
+        entering.forEach(function (li) { li.classList.remove('pre'); li.classList.add('is-in'); li.hidden = false; });
+        staying.forEach(function (li, i) {
+          var last = li.getBoundingClientRect();
+          var dx = first[i].left - last.left, dy = first[i].top - last.top;
+          if (dx || dy) { li.style.transition = 'none'; li.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; }
+        });
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            staying.forEach(function (li) { li.style.transition = ''; li.style.transform = ''; });
+            entering.forEach(function (li, i) { setTimeout(function () { li.classList.remove('is-in'); fillMeters(li); }, 60 * i); });
+            setTimeout(function () { busy = false; }, 500);
+          });
+        });
+      }, leaving.length ? 280 : 0);
+    }
+    filter.addEventListener('click', function (e) {
+      var chip = e.target.closest('.fchip');
+      if (!chip || chip.classList.contains('active')) return;
+      chips.forEach(function (c) { var on = c === chip; c.classList.toggle('active', on); c.setAttribute('aria-pressed', String(on)); });
+      applyFilter(chip.dataset.filter);
+    });
+  }
+
   var year = document.querySelector('[data-year]');
   if (year) year.textContent = new Date().getFullYear();
 })();
