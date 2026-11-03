@@ -34,6 +34,19 @@ Google Scholar sometimes blocks automated requests from GitHub's servers. If the
 1. Create a free account at [serpapi.com](https://serpapi.com) (250 searches/month; four runs a day use about 120).
 2. In the repo, go to **Settings → Secrets and variables → Actions** and add a secret named `SERPAPI_KEY`.
 
+## Visitor counter and email reports
+
+Visits are counted with [GoatCounter](https://www.goatcounter.com) (no cookies, no personal data; country, page and referrer only). The site code is `goatcounter` in `data/site.json`; the dashboard is at `https://<code>.goatcounter.com`.
+
+`.github/workflows/visit-report.yml` checks every 30 minutes and emails a report each time the site passes another 10 visits, with the countries of the new visitors. It needs these repository secrets (**Settings → Secrets and variables → Actions**):
+
+| Secret | Value |
+|--------|-------|
+| `GOATCOUNTER_TOKEN` | GoatCounter API token with *Read statistics* permission |
+| `MAIL_USERNAME` | The Gmail address that sends the report |
+| `MAIL_PASSWORD` | A Gmail *app password* (https://myaccount.google.com/apppasswords), not the normal password |
+| `MAIL_TO` | Optional: where to send the report (defaults to `MAIL_USERNAME`) |
+
 ## Adding a news item by hand
 
 Add an entry to the top of `data/news.json`:

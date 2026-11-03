@@ -1,4 +1,6 @@
 {
   "url": "https://amirnaderi.com/",
-  "note": "Public address of the site, ending in /. Change it if you rename the repo or add a custom domain, then run: python3 scripts/update_site.py"
+  "note": "Public address of the site, ending in /. Change it if you rename the repo or add a custom domain, then run: python3 scripts/update_site.py",
+  "goatcounter": "amirnaderi",
+  "note_goatcounter": "GoatCounter site code (https://<code>.goatcounter.com) used for the visitor counter. Leave empty to turn counting off."
 }

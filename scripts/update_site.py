@@ -208,6 +208,7 @@ STRINGS = {
         "citations": "{n} citations", "citation": "1 citation", "under_review_chip": "under review",
         "all": "All", "filter_label": "Filter publications by topic", "showing": "Showing {n} of {total}",
         "synced_auto": "Publications and citation counts are updated daily from Google Scholar.",
+        "privacy": "Visits are counted with <a href=\"https://www.goatcounter.com/help/privacy\" target=\"_blank\" rel=\"noopener\">GoatCounter</a>, without cookies or personal data.",
         "date": "{d} {m} {y}",
         "og_locale": "en_US",
         "page_title": "Amir Reza Naderi Yaghouti – AI in Medicine Researcher",
@@ -226,6 +227,7 @@ STRINGS = {
         "citations": "{n} Zitationen", "citation": "1 Zitation", "under_review_chip": "in Begutachtung",
         "all": "Alle", "filter_label": "Publikationen nach Thema filtern", "showing": "{n} von {total} angezeigt",
         "synced_auto": "Publikationen und Zitationszahlen werden täglich aus Google Scholar aktualisiert.",
+        "privacy": "Besuche werden mit <a href=\"https://www.goatcounter.com/help/privacy\" target=\"_blank\" rel=\"noopener\">GoatCounter</a> gezählt, ohne Cookies und ohne personenbezogene Daten.",
         "date": "{d}. {m} {y}",
         "og_locale": "de_DE",
         "page_title": "Amir Reza Naderi Yaghouti – Forscher für KI in der Medizin",
@@ -447,11 +449,11 @@ def render_stats(store, t):
     )
 
 
-def render_updated(store, t):
-    return t["synced_auto"]
+def render_updated(store, t, counter=""):
+    return t["synced_auto"] + (f"<br>{t['privacy']}" if counter else "")
 
 
-def render_head(site_url, lang, path, t, store):
+def render_head(site_url, lang, path, t, store, counter=""):
     url = site_url + path
     image = site_url + "assets/img/profile.jpg"
     person = {
@@ -538,6 +540,9 @@ def render_head(site_url, lang, path, t, store):
         json.dumps(person, indent=2, ensure_ascii=False).replace("</", "<\\/"),
         "  </script>",
     ]
+    if counter:
+        # GoatCounter: cookie-free visitor counter (country, page, referrer); no personal data.
+        lines.append(f'  <script data-goatcounter="https://{esc(counter)}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>')
     return "\n".join(lines)
 
 
@@ -601,16 +606,18 @@ def main():
             else:
                 print("No changes on Google Scholar.")
 
-    site_url = json.loads(SITE_FILE.read_text(encoding="utf-8"))["url"].rstrip("/") + "/"
+    site_cfg = json.loads(SITE_FILE.read_text(encoding="utf-8"))
+    site_url = site_cfg["url"].rstrip("/") + "/"
+    counter = (site_cfg.get("goatcounter") or "").strip()
     for file, lang, path in PAGES:
         t = STRINGS[lang]
         target = ROOT / file
         page = target.read_text(encoding="utf-8")
-        page = replace_block(page, "HEAD", render_head(site_url, lang, path, t, store), file)
+        page = replace_block(page, "HEAD", render_head(site_url, lang, path, t, store, counter), file)
         page = replace_block(page, "STATS", render_stats(store, t), file)
         page = replace_block(page, "NEWS", render_news(news, t, lang), file)
         page = replace_block(page, "PUBLICATIONS", render_publications(store["publications"], t), file)
-        page = replace_block(page, "UPDATED", render_updated(store, t), file)
+        page = replace_block(page, "UPDATED", render_updated(store, t, counter), file)
         target.write_text(page, encoding="utf-8")
     write_sitemap_and_robots(site_url)
 
