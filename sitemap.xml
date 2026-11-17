@@ -1,17 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://amirnaderi.com/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-11-17</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://amirnaderi.com/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://amirnaderi.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://amirnaderi.com/"/>
+    <image:image><image:loc>https://amirnaderi.com/assets/img/profile.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://amirnaderi.com/de/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-11-17</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://amirnaderi.com/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://amirnaderi.com/de/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://amirnaderi.com/"/>
+    <image:image><image:loc>https://amirnaderi.com/assets/img/profile.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://amirnaderi.com/publications/classification-of-nonalcoholic-fatty-liver-grades-using-pre-trained/</loc>
+    <lastmod>2026-11-17</lastmod>
+  </url>
+  <url>
+    <loc>https://amirnaderi.com/publications/machine-learning-approaches-for-early-detection-of-non-alcoholic/</loc>
+    <lastmod>2026-11-17</lastmod>
+  </url>
+  <url>
+    <loc>https://amirnaderi.com/publications/automatic-classification-of-non-alcoholic-fatty-liver-using-texture/</loc>
+    <lastmod>2026-11-17</lastmod>
+  </url>
+  <url>
+    <loc>https://amirnaderi.com/publications/artificial-intelligence-for-ovarian-cancer-detection-with-medical-images/</loc>
+    <lastmod>2026-11-17</lastmod>
   </url>
 </urlset>
