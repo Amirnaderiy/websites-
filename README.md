@@ -10,6 +10,9 @@ A static, single-page CV site. It uses plain HTML, CSS and a little JavaScript, 
 | `de/index.html` | German page (same structure). When you change `index.html`, make the same change here. |
 | `data/site.json` | The site's public address, used for Google (canonical links, sitemap). |
 | `sitemap.xml`, `robots.txt` | Generated for search engines. Don't edit by hand. |
+| `publications/<title>/` | One generated page per published paper, with the `citation_*` tags Google Scholar reads and schema.org data. Don't edit by hand. An optional `"abstract"` field in `data/publications.json` adds an abstract to the page; `"slug"` changes its address. |
+| `assets/img/og-image.png` | The 1200×630 preview image shown when the site is shared on LinkedIn, X or WhatsApp. |
+| `404.html` | Shown for addresses that don't exist (also old links from the domain's previous owner); not indexed by Google. |
 | `assets/img/profile.jpg` | Your photo (portrait orientation, about 800×1000 px). |
 | `favicon.*`, `apple-touch-icon.png`, `icon-512.png`, `site.webmanifest` | The site icon (navy "AN" monogram) shown in browser tabs and next to the site in Google results. |
 | `assets/cv/Amir-Reza-Naderi-Yaghouti-CV.pdf` | The CV behind the **Download CV** buttons. Replace the file, keeping the same name, to update it. |
@@ -78,6 +81,8 @@ Each page includes:
 - a title and description with both **Amir Reza Naderi Yaghouti** and **Amir Naderi**
 - `schema.org` Person data (name variants, affiliations, profiles, papers), which Google uses to understand who the page is about
 - canonical and `hreflang` links, Open Graph and Twitter preview tags, plus `sitemap.xml` and `robots.txt`
+- `rel="me"` on the profile links (LinkedIn, Scholar, ORCID, ResearchGate, GitHub), which marks them as the same person
+- a page per paper (see `publications/`), so searches for a paper title together with your name can lead to your site
 
 These steps help most after the site is live:
 1. **Google Search Console:** open https://search.google.com/search-console, add the site URL as a *URL prefix* property, and verify it with the *HTML tag* method. Put that tag in the `<head>` of `index.html`, or ask Claude to. Then submit `sitemap.xml` under **Sitemaps** and click **Request indexing**.
